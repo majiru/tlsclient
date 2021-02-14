@@ -1,0 +1,43 @@
+#!/bin/sh
+
+auth=$AUTH
+user=$USER
+cpu=$CPU
+
+while :; do
+	case $1 in
+		-a)
+			auth=$2
+			shift
+			;;
+		-u)
+			user=$2
+			shift
+			;;
+		-h)
+			cpu=$2
+			shift
+			;;
+		*)
+			break;
+	esac
+	shift
+done
+
+cmd="rc -i"
+
+if [ "$#" -ne 0 ]; then
+	cmd=$*
+fi
+
+len=`echo $cmd | wc -c`
+
+USER=$user AUTH=$auth CPU=$cpu tlsclient -f -p 17019 sh <(cat <<EOF
+consin=\`head -c 1\`
+consout=\`head -c 1\`
+printf '%7ld\n' $len
+echo $cmd
+cat <&\$consin 2>/dev/null &
+cat >&\$consout 2>/dev/null 
+EOF
+)
