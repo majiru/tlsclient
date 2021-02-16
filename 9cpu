@@ -32,12 +32,10 @@ fi
 
 len=`echo $cmd | wc -c`
 
-USER=$user AUTH=$auth CPU=$cpu tlsclient -f -p 17019 sh <(cat <<EOF
-consin=\`head -c 1\`
-consout=\`head -c 1\`
+USER=$user AUTH=$auth CPU=$cpu tlsclient -p 17019 sh <(cat <<EOF
 printf '%7ld\n' $len
 echo $cmd
-cat <&\$consin 2>/dev/null &
-cat >&\$consout 2>/dev/null 
+cat </dev/tty 2>/dev/null &
+cat >/dev/tty 2>/dev/null
 EOF
 )

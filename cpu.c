@@ -98,7 +98,7 @@ xfer(int from, int to, iofunc recvf, iofunc sendf)
 void
 usage(void)
 {
-	fprint(2, "Usage: %s [-f] [ -u user ] [ -h host ] [ -a authserver ] -p port cmd...\n", argv0);
+	fprint(2, "Usage: %s [ -u user ] [ -h host ] [ -a authserver ] -p port cmd...\n", argv0);
 	exits("usage");
 }
 
@@ -114,10 +114,8 @@ main(int argc, char **argv)
 	int pout[2];
 	int infd, outfd;
 	pid_t execc, xferc;
-	int consin, consout, consflag;
 
 	execc = xferc = 0;
-	consflag = 0;
 	infd = 0;
 	outfd = 1;
 	user = getenv("USER");	
@@ -131,7 +129,6 @@ main(int argc, char **argv)
 		case 'h': host = EARGF(usage()); break;
 		case 'a': authserver = EARGF(usage()); break;
 		case 'p': port = EARGF(usage()); break;
-		case 'f': consflag++; break;
 	} ARGEND
 
 	if(user == nil || host == nil || authserver == nil || port == nil)
@@ -149,16 +146,6 @@ main(int argc, char **argv)
 	if(*argv){
 		pipe(pin);
 		pipe(pout);
-		if(consflag){
-			/*
-			 * Unix has no /dev/cons, so there is no way to read
-			 * and write from the terminal if stdin and stdout
-			 * are dup'd over with the socket. This gives a bit
-			 * of a back door in to the orginal stdin and stdout.
-			 */
-			consin = dup(0);
-			consout = dup(1);
-		}
 		switch((execc = fork())){
 		case -1:
 			sysfatal("fork");
@@ -174,16 +161,6 @@ main(int argc, char **argv)
 		close(pin[0]);
 		infd = pout[0];
 		outfd = pin[1];
-		if(consflag){
-			/*
-			 * For the sake of portability,
-			 * send the "cons" fds as the first
-			 * to lines to the child process to avoid
-			 * having to assume the next two fds
-			 */
-			n = sprint(buf, "%d%d", consin, consout);
-			write(pin[1], buf, n);
-		}
 	}
 
 	fd = unix_dial(host, port);

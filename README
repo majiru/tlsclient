@@ -3,15 +3,10 @@ tlsclient: tlsclient(1) for unix
 tlsclient comes with two programs, tlsclient itself and 9cpu which uses tlsclient
 to connect to a 9front cpu server and acts as rcpu(1).
 
-Due to the lack of /dev/cons on unix, an additional flag '-f' is added which
-causes tlsclient to dup additional copies of it's own stdin and stdout and place
-them on additional file descriptors for the child process. The additional file
-descriptor numbers are sent as the first two bytes to the child process.
-
 Most of this code is pillaged from jsdrawterm: https://github.com/aiju/jsdrawterm
 
 Usage:
-	tlsclient [-f] [ -u user] [ -h host ] [ -a auth ] -p port cmd...
+	tlsclient [ -u user] [ -h host ] [ -a auth ] -p port cmd...
 	9cpu [ -u user ] [ -h host ] [ -a auth ] cmd...
 
 Bugs:
