@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <netinet/in.h>
 #include <gnutls/gnutls.h>
 
 #include <u.h>
