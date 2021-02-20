@@ -1,13 +1,20 @@
 tlsclient: tlsclient(1) for unix
 
-tlsclient comes with two programs, tlsclient itself and 9cpu which uses tlsclient
-to connect to a 9front cpu server and acts as rcpu(1).
+This repo contains three programs, tlsclient itself, 9cpu and git-remote-hjgit.
+9cpu acts as rcpu(1).
+Git-remote-hjgit is a git remote helper for unix git that allows use of hjgit repos.
 
-Most of this code is pillaged from jsdrawterm: https://github.com/aiju/jsdrawterm
+Most of the tlsclient code is pillaged from jsdrawterm: https://github.com/aiju/jsdrawterm
 
 Usage:
 	tlsclient [ -u user] [ -h host ] [ -a auth ] -p port cmd...
 	9cpu [ -u user ] [ -h host ] [ -a auth ] cmd...
 
+Example:
+	9cpu -u moody -h shithub.us -a p9auth.shithub.us newrepo tlsclient
+
+	# with git-remote-hjgit in your $PATH
+	git clone hjgit://shithub.us/user/repo
+
 Bugs:
-	Currently 9cpu uses gnutls, a better alternative is welcome.
+	Currently tlsclient uses gnutls, a better alternative is welcome.

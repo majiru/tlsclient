@@ -1,0 +1,53 @@
+#!/bin/sh
+
+alias=$1
+url=$2
+
+host=`echo $url | awk  'BEGIN{ FS = "/" } { print $3 }'`
+path=`echo $url | awk "BEGIN{ FS = \"/\" } { gsub(/.*$host/, \"\"); printf(\"%s\", "'$0'") }"`
+
+dir="$GIT_DIR/hjgit/$alias"
+prefix="refs/hjgit/$alias"
+
+default_refspec="refs/heads/*:${prefix}/heads/*"
+
+refspec="${GIT_REMOTE_HJGIT_REFSPEC-$default_refspec}"
+
+test -z "$refspec" && prefix="refs"
+
+force=
+
+mkdir -p "$dir"
+
+if test -z "$GIT_REMOTE_HJGIT_NO_MARKS"
+then
+	gitmarks="$dir/git.marks"
+	hjgitmarks="$dir/hjgit.marks"
+	test -e "$gitmarks" || >"$gitmarks"
+	test -e "$hjgitmarks" || >"$hjgitmarks"
+fi
+
+packinitfmt(){
+	printf "%s %s\0host=%s" $1 $2 $3 | awk '{ printf("%04x%s\0", length($0)+1+4, $0) }'
+}
+
+while read line
+do
+	case $line in
+	capabilities)
+		# connect tells git that we're speaking the git protocol with extra steps
+		echo 'connect'
+		echo
+		;;
+	connect*)
+		# lie that the connection works
+		echo
+		{
+			packinitfmt $(echo $line | awk '{ print $2 }') $path $host
+			cat
+		} | CPU=$host AUTH='p9auth.'$host tlsclient -p 17021
+		exit
+		;;
+	esac
+
+done
