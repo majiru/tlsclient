@@ -3,10 +3,10 @@
 
 #undef long
 #undef ulong
-#include <sys/random.h>
+#include <unistd.h>
 
 void
 genrandom(uchar *buf, int nbytes)
 {
-	getrandom(buf, nbytes, 0);
+	getentropy(buf, nbytes);
 }
