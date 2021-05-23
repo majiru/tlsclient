@@ -98,24 +98,27 @@ xfer(int from, int to, iofunc recvf, iofunc sendf)
 void
 usage(void)
 {
-	fprint(2, "Usage: %s [ -u user ] [ -h host ] [ -a authserver ] -p port cmd...\n", argv0);
+	fprint(2, "Usage: %s [ -R ] [ -u user ] [ -h host ] [ -a authserver ] -p port cmd...\n", argv0);
 	exits("usage");
 }
 
 int
 main(int argc, char **argv)
 {
+	int Rflag;
 	int fd, res;
-	char *cmd;
+	char buf2[1024];
 	char buf[1024];
 	size_t n;
 	char *port;
 	int pin[2];
 	int pout[2];
 	int infd, outfd;
+	int i;
 	pid_t execc, xferc;
 
 	execc = xferc = 0;
+	Rflag = 0;
 	infd = 0;
 	outfd = 1;
 	user = getenv("USER");	
@@ -129,6 +132,7 @@ main(int argc, char **argv)
 		case 'h': host = EARGF(usage()); break;
 		case 'a': authserver = EARGF(usage()); break;
 		case 'p': port = EARGF(usage()); break;
+		case 'R': Rflag++; break;
 	} ARGEND
 
 	if(user == nil || host == nil || authserver == nil || port == nil)
@@ -143,7 +147,7 @@ main(int argc, char **argv)
 		sysfatal("could not init session");
 	}
 
-	if(*argv){
+	if(*argv && !Rflag){
 		pipe(pin);
 		pipe(pout);
 		switch((execc = fork())){
@@ -169,6 +173,19 @@ main(int argc, char **argv)
 	}
 
 	p9authtls(fd);
+
+	if(*argv && Rflag) {
+		for(i=0,n=0; i<argc; i++)
+			n += snprint(buf+n, sizeof buf - n - 1, "%s ", argv[i]);
+		if(n <= 0)
+			usage();
+		buf[n-1] = '\n';
+		buf[n] = '\0';
+		i = strlen(buf);
+		snprint(buf2, sizeof buf2, "%7d\n", i);
+		tls_send(-1, buf2, strlen(buf2));
+		tls_send(-1, buf, i);
+	}
 
 	switch((xferc = fork())){
 	case -1:

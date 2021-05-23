@@ -30,13 +30,4 @@ if [ "$#" -ne 0 ]; then
 	cmd=$*
 fi
 
-len=`echo $cmd | wc -c`
-
-cmd=`cat <<EOF
-printf '%7d\n' $len;
-echo $cmd;
-cat </dev/tty 2>/dev/null &
-cat >/dev/tty 2>/dev/null;
-EOF
-`
-USER=$user AUTH=$auth CPU=$cpu tlsclient -p 17019 sh -c "$cmd"
+USER=$user AUTH=$auth CPU=$cpu tlsclient -R -p 17019 $cmd
