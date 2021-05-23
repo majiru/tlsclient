@@ -30,4 +30,4 @@ if [ "$#" -ne 0 ]; then
 	cmd=$*
 fi
 
-USER=$user AUTH=$auth CPU=$cpu tlsclient -R -p 17019 $cmd
+USER=$user AUTH=$auth CPU=$cpu tlsclient -R $cmd

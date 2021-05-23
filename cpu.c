@@ -135,6 +135,9 @@ main(int argc, char **argv)
 		case 'R': Rflag++; break;
 	} ARGEND
 
+	if(Rflag)
+		port = "17019";
+
 	if(user == nil || host == nil || authserver == nil || port == nil)
 		usage();
 
