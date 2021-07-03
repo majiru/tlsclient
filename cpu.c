@@ -12,7 +12,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <netinet/in.h>
-#include <gnutls/gnutls.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include <u.h>
 #include <args.h>
@@ -21,26 +22,34 @@
 #include <authsrv.h>
 #include <libsec.h>
 
-
-#define MaxStr 128
-
-static void	usage(void);
-static int	readstr(int, char*, int);
 static AuthInfo *p9any(int);
 static int	getkey(Authkey*, char*, char*, char*, char*);
 static int	p9authtls(int);
 
-static char	*host;
-
 char *argv0;
 
+static char	*host;
 char *authserver;
-char *secstore;
 char *user, *pass;
-char secstorebuf[65536];
-char *geometry;
 
-gnutls_session_t session;
+SSL_CTX *ssl_ctx;
+SSL *ssl_conn;
+
+//callback needs access to ai returned from p9any
+static AuthInfo *ai;
+
+static uint
+psk_client_cb(SSL *ssl, const char *hint, char *identity, uint max_iden_len, uchar *psk, uint max_psk_len)
+{
+	uint nsecret = ai->nsecret;
+	char i[] = "p9secret";
+	if(max_iden_len < sizeof i || max_psk_len < ai->nsecret)
+		sysfatal("psk buffers are too small");
+	memcpy(identity, i, sizeof i);
+	memcpy(psk, ai->secret, ai->nsecret);
+	memset(ai, 0, sizeof *ai);
+	return nsecret;
+}
 
 void errstr(char *s){}
 
@@ -66,7 +75,6 @@ unix_dial(char *host, char *port)
 	return fd;
 }
 
-
 char*
 estrdup(char *s)
 {
@@ -77,8 +85,8 @@ estrdup(char *s)
 }
 
 typedef size_t (*iofunc)(int, void*, size_t);
-size_t tls_send(int f, void *b, size_t n) { return gnutls_record_send(session, b, n); }
-size_t tls_recv(int f, void *b, size_t n) { return gnutls_record_recv(session, b, n); }
+size_t tls_send(int f, void *b, size_t n) { return SSL_write(ssl_conn, b, n); }
+size_t tls_recv(int f, void *b, size_t n) { return SSL_read(ssl_conn, b, n); }
 size_t s_send(int f, void *b, size_t n) { return write(f, b, n); }
 size_t s_recv(int f, void *b, size_t n) { return read(f, b, n); }
 
@@ -144,11 +152,16 @@ main(int argc, char **argv)
 	if(pass == nil)
 		pass = getpass("password:");
 
-	gnutls_global_init();
-	res = gnutls_init(&session, GNUTLS_CLIENT);
-	if(res != GNUTLS_E_SUCCESS){
-		sysfatal("could not init session");
-	}
+	SSL_library_init();
+	OpenSSL_add_all_algorithms();
+	SSL_load_error_strings();
+	ssl_ctx = SSL_CTX_new(TLSv1_2_client_method());
+	SSL_CTX_set_psk_client_callback(ssl_ctx, psk_client_cb);
+	if(ssl_ctx == nil)
+		sysfatal("could not init openssl");
+	ssl_conn = SSL_new(ssl_ctx);
+
+
 
 	if(*argv && !Rflag){
 		pipe(pin);
@@ -224,49 +237,19 @@ readstr(int fd, char *str, int len)
 	return -1;
 }
 
-
 /*
  * p9any authentication followed by tls-psk encryption
  */
 static int
 p9authtls(int fd)
 {
-	AuthInfo *ai;
-	gnutls_psk_client_credentials_t cred;
-	gnutls_datum_t key;
-	const char *error = NULL;
-	int res;
-
 	ai = p9any(fd);
 	if(ai == nil)
 		sysfatal("can't authenticate: %r");
 
-	if(gnutls_psk_allocate_client_credentials(&cred) != 0)
-		sysfatal("can't allocate client creds");
-
-	key.size = ai->nsecret;
-	key.data = ai->secret;
-
-	if(gnutls_psk_set_client_credentials(cred, "p9secret", &key, GNUTLS_PSK_KEY_RAW) != 0)
-		sysfatal("can't set creds");
-	if(gnutls_credentials_set(session, GNUTLS_CRD_PSK, cred) != 0)
-		sysfatal("can't set creds 2");
-	res = gnutls_priority_set_direct(
-		session,
-		"NONE:+VERS-TLS1.2:+SIGN-ALL:+MAC-ALL:+CHACHA20-POLY1305:+PSK:+CTYPE-ALL",
-		&error
-	);
-	if (res != GNUTLS_E_SUCCESS) {
-		sysfatal("gnutls_priority_set_direct() failed: %s", error);
-	}
-	gnutls_transport_set_int(session, fd);
-	do {
-		res = gnutls_handshake(session);
-	} while ( res != 0 && !gnutls_error_is_fatal(res) );
-
-	if (gnutls_error_is_fatal(res)) {
-		sysfatal("Fatal error during handshake");
-	}
+	SSL_set_fd(ssl_conn, fd);
+	if(SSL_connect(ssl_conn) < 0)
+		sysfatal("ssl could not connect");
 
 	return fd;
 }
