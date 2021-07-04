@@ -1,10 +1,15 @@
 tlsclient: tlsclient(1) for unix
 
-This repo contains three programs, tlsclient itself, 9cpu and git-remote-hjgit.
-9cpu acts as rcpu(1).
-Git-remote-hjgit is a git remote helper for unix git that allows use of hjgit repos.
+This repo contains:
+	9cpu: rcpu(1) on unix
+	tlsclient: tlsclient(1) on unix
+	git-remote-hjgit: git remote helper for using hjgit repos.
+	pam_p9.so: A pam module that authenticates against a 9front auth server.
 
 Most of the tlsclient code is pillaged from jsdrawterm: https://github.com/aiju/jsdrawterm
+The main difference between tlsclient and drawterm is that tlsclient has stripped out the
+plan9 kernel that runs in userspace. This means we use openssl for TLS and and don't provide
+things like /mnt/term, but gain some more flexibility.
 
 Usage:
 	tlsclient [ -R ] [ -u user] [ -h host ] [ -a auth ] -p port cmd...
@@ -15,6 +20,3 @@ Example:
 
 	# with git-remote-hjgit in your $PATH
 	git clone hjgit://shithub.us/user/repo
-
-Bugs:
-	Currently tlsclient uses gnutls, a better alternative is welcome.
