@@ -98,6 +98,7 @@ main(int argc, char **argv)
 	int pin[2];
 	int pout[2];
 	int infd, outfd;
+	char *srv = nil;
 	int i;
 	pid_t execc, xferc;
 
@@ -117,9 +118,10 @@ main(int argc, char **argv)
 		case 'a': authserver = EARGF(usage()); break;
 		case 'p': port = EARGF(usage()); break;
 		case 'R': Rflag++; break;
+		case 's': srv = EARGF(usage()); break;
 	} ARGEND
 
-	if(Rflag)
+	if(Rflag || srv != nil)
 		port = "17019";
 
 	if(user == nil || host == nil || authserver == nil || port == nil)
@@ -137,7 +139,15 @@ main(int argc, char **argv)
 		sysfatal("could not init openssl");
 	ssl_conn = SSL_new(ssl_ctx);
 
-	if(*argv && !Rflag){
+
+	fd = unix_dial(host, port);
+	if(fd < 0){
+		sysfatal("Failed to connect to the client");
+	}
+
+	p9authtls(fd);
+
+	if(!Rflag || srv != nil){
 		pipe(pin);
 		pipe(pout);
 		switch((execc = fork())){
@@ -155,22 +165,20 @@ main(int argc, char **argv)
 		close(pin[0]);
 		infd = pout[0];
 		outfd = pin[1];
+		if(srv != nil){
+			snprint(buf, sizeof buf - 1, "bind '#|' /n/p; <>[3]/n/p/data1 { echo 3 > /srv/%s; cat /n/p/data & cat > /n/p/data}\n", srv);
+			goto rcpu;
+		}
 	}
 
-	fd = unix_dial(host, port);
-	if(fd < 0){
-		sysfatal("Failed to connect to the client");
-	}
-
-	p9authtls(fd);
-
-	if(*argv && Rflag) {
+	if(Rflag) {
 		for(i=0,n=0; i<argc; i++)
 			n += snprint(buf+n, sizeof buf - n - 1, "%s ", argv[i]);
 		if(n <= 0)
 			usage();
 		buf[n-1] = '\n';
 		buf[n] = '\0';
+rcpu:
 		i = strlen(buf);
 		snprint(buf2, sizeof buf2, "%7d\n", i);
 		tls_send(-1, buf2, strlen(buf2));
