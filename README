@@ -24,4 +24,5 @@ Example:
 
 OpenBSD:
 	OpenBSD uses LibreSSL in place of OpenSSL. Unfortunately LibreSSL does
-	have all we need. Tweak Make.config as needed.
+	not have PSK cipher suites. Tweak Make.config as required. Openssl is
+	only used for tlsclient and rcpu, login_-dp9ik does not require it.
