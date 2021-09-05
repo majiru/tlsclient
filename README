@@ -27,16 +27,41 @@ OpenBSD:
 	not have PSK cipher suites. Tweak Make.config as required. Openssl is
 	only used for tlsclient and rcpu, login_-dp9ik does not require it.
 
+OpenBSD Authentication:
+	Build:
+		# Modify "char *authserver" in bsd.c to specify a default auth server
+		$ make login_-dp9ik
+	Testing:
+		./login_-dp9ik -d -v authserver="my.auth.server"
+		# you will see authenticate/reject print out on stdout
+		# for success/failure.
+	Install:
+		$ cp login_-dp9ik /usr/libexec/auth/
+	Config:
+		Modify the auth-defaults line of /etc/login.conf
+		to use the new executable. This will look something like:
 
-Configuring pam authentication:
-	Many systems configure PAM differently so defer to your OS
-	documentation for where to store pam_p9.so and which pam
-	configuration needs to be changed. Pam_p9.so accepts
-	a single argument within the pam configuration, that being
-	the auth server to use. Something akin to the following
-	should work as additions to a pam configuration.
+		auth-defaults:auth=-dp9ik,passwd,skey:
+	Notes:
+		OpenBSD requires that all users regardless of
+		authentication mechanism exist in /etc/passwd.
+		OpenBSD does not retry with other mechanisms
+		if one sends a rejection, this means all
+		users(including root) must exist within the
+		auth server.
 
-	auth sufficent pam_p9.so flan
-	account sufficent pam_p9.so flan
+PAM Authentication:
+	Build:
+		$ make pam_p9.so
+	Install and Config:
+		Many systems configure PAM differently so defer to your OS
+		documentation for where to store pam_p9.so and which pam
+		configuration needs to be changed. Pam_p9.so accepts
+		a single argument within the pam configuration, that being
+		the auth server to use. Something akin to the following
+		should work as additions to a pam configuration.
+
+		auth sufficent pam_p9.so flan
+		account sufficent pam_p9.so flan
 	
-	With flan being the hostname or ip of the desired auth server.
+		With "flan" being the hostname or ip of the desired auth server.
