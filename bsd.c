@@ -1,0 +1,143 @@
+#include <sys/types.h>
+#include <sys/resource.h>
+
+#include <errno.h>
+#include <pwd.h>
+#include <readpassphrase.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <syslog.h>
+#include <unistd.h>
+#include <util.h>
+#include <login_cap.h>
+
+#undef login
+
+#include <u.h>
+#include <args.h>
+#include <libc.h>
+#include <auth.h>
+#include <authsrv.h>
+#include <libsec.h>
+
+#include "fncs.h"
+
+char *authserver;
+
+int
+main(int argc, char *argv[])
+{
+	FILE *back = NULL;
+	char *class = NULL, *username = NULL, *wheel = NULL;
+	char response[1024], pbuf[1024], *pass = "";
+	int ch, mode = 0, lastchance = 0, fd = -1;
+	AuthInfo *ai;
+
+	(void)signal(SIGQUIT, SIG_IGN);
+	(void)signal(SIGINT, SIG_IGN);
+	(void)setpriority(PRIO_PROCESS, 0, 0);
+
+	openlog(NULL, LOG_ODELAY, LOG_AUTH);
+
+	while ((ch = getopt(argc, argv, "ds:v:")) != -1) {
+		switch (ch) {
+		case 'd':
+			back = stdout;
+			break;
+		case 's':	/* service */
+			if (strcmp(optarg, "login") == 0)
+				mode = 0;
+			else if (strcmp(optarg, "challenge") == 0)
+				mode = 1;
+			else if (strcmp(optarg, "response") == 0)
+				mode = 2;
+			else {
+				syslog(LOG_ERR, "%s: invalid service", optarg);
+				exit(1);
+			}
+			break;
+		case 'v':
+			if (strncmp(optarg, "wheel=", 6) == 0)
+				wheel = optarg + 6;
+			else if (strncmp(optarg, "lastchance=", 11) == 0)
+				lastchance = (strcmp(optarg + 11, "yes") == 0);
+			else if (strncmp(optarg, "authserver=", 11) == 0)
+				authserver = optarg + 11;
+			break;
+		default:
+			syslog(LOG_ERR, "usage error");
+			exit(1);
+		}
+	}
+
+	switch (argc - optind) {
+	case 2:
+		class = argv[optind + 1];
+		/* FALLTHROUGH */
+	case 1:
+		username = argv[optind];
+		break;
+	default:
+		syslog(LOG_ERR, "usage error");
+		exit(1);
+	}
+
+	if (back == NULL && (back = fdopen(3, "r+")) == NULL) {
+		syslog(LOG_ERR, "reopening back channel: %m");
+		exit(1);
+	}
+	if (wheel != NULL && strcmp(wheel, "yes") != 0) {
+		fprintf(back, BI_VALUE " errormsg %s\n",
+		    "you are not in group wheel");
+		fprintf(back, BI_REJECT "\n");
+		exit(1);
+	}
+
+	if (mode == 1) {
+		fprintf(back, BI_SILENT "\n");
+		exit(0);
+	}
+
+	(void)setpriority(PRIO_PROCESS, 0, -4);
+
+	if (mode == 2) {
+		mode = 0;
+		ch = -1;
+		while (++ch < sizeof(response) &&
+		    read(3, &response[ch], 1) == 1) {
+			if (response[ch] == '\0' && ++mode == 2)
+				break;
+			if (response[ch] == '\0' && mode == 1)
+				pass = response + ch + 1;
+		}
+		if (mode < 2) {
+			syslog(LOG_ERR, "protocol error on back channel");
+			exit(1);
+		}
+	} else {
+		pass = readpassphrase("Password:", pbuf, sizeof(pbuf),
+		    RPP_ECHO_OFF);
+	}
+
+	if (pass == NULL){
+		fprintf(back, BI_REJECT "\n");
+		exit(1);
+	}
+
+	fd = unix_dial(authserver, "17019");
+	if(fd < 0){
+		fprintf(back, BI_REJECT "\n");
+		exit(1);
+	}
+
+	ai = p9any(username, pass, fd);
+	if(ai == nil){
+		fprintf(back, BI_REJECT "\n");
+		exit(1);
+	}
+
+	fprintf(back, BI_AUTH "\n");
+	exit(0);
+}

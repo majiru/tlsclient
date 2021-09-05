@@ -91,8 +91,6 @@ extern	int	addns(char*, char*);
 extern	int	noworld(char*);
 extern	int	amount(int, char*, int, char*);
 
-extern	int	login(char*, char*, char*);
-
 typedef struct Attr Attr;
 enum {
 	AttrNameval,		/* name=val -- when matching, must have name=val */
