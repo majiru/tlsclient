@@ -6,4 +6,4 @@ artifacts:
 tasks:
   - build: |
       cd tlsclient
-      make -j $(nproc) obsddist
+      make -j $(sysctl -n hw.ncpu) obsddist
