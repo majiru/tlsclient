@@ -51,3 +51,11 @@ libc/libc.a:
 .PHONY: libsec/libsec.a
 libsec/libsec.a:
 	(cd libsec; $(MAKE))
+
+linuxdist: tlsclient pam_p9.so 9cpu
+	tar cf tlsclient.tar tlsclient pam_p9.so 9cpu
+	gzip tlsclient.tar
+
+obsddist: tlsclient login_-dp9ik 9cpu
+	tar cf tlsclient-obsd.tar tlsclient 9cpu login_-dp9ik
+	gzip tlsclient-obsd.tar

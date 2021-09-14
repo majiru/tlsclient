@@ -31,24 +31,43 @@ estrdup(char *s)
 int
 unix_dial(char *host, char *port)
 {
-	int fd;
-	struct sockaddr_in server;
-	struct hostent *he;
-	struct in_addr **addr_list;
+	struct addrinfo hints, *res, *res0;
+	int error;
+	int save_errno;
+	int s;
+	const char *cause = NULL;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
 
-	he = gethostbyname(host);
-	if(he == nil){
+
+	error = getaddrinfo(host, port, &hints, &res0);
+	if(error){
 		printf("could not resolve %s", host);
 		return -1;
 	}
-	fd = socket(AF_INET, SOCK_STREAM, 0);
-	addr_list = (struct in_addr **) he->h_addr_list;
-	server.sin_addr.s_addr = inet_addr(inet_ntoa(*addr_list[0]));
-	server.sin_family = AF_INET;
-	server.sin_port = htons(atoi(port));
-	if(connect(fd, (struct sockaddr*)&server, sizeof(server)) < 0)
-		return -1;
-	return fd;
+	s = -1;
+	for (res = res0; res; res = res->ai_next) {
+		s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (s == -1) {
+			cause = "socket";
+			continue;
+		}
+		if (connect(s, res->ai_addr, res->ai_addrlen) == -1) {
+			cause = "connect";
+			save_errno = errno;
+			close(s);
+			errno = save_errno;
+			s = -1;
+			continue;
+		}
+
+		break;  /* okay we got one */
+	}
+	if (s == -1) {
+		err(1, "%s", cause);
+	}
+	return s;
 }
 
 static int
