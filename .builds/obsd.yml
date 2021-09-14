@@ -1,9 +1,13 @@
 image: openbsd/6.9
 sources:
   - https://git.sr.ht/~moody/tlsclient
+packages:
+  - "openssl-1.1.1k"
 artifacts:
   - tlsclient/tlsclient-obsd.tar.gz
 tasks:
   - build: |
       cd tlsclient
+      sed -i '/^OPENSSL/d' Make.config
+      sed -i 's/#OPENSSL/OPENSSL/g' Make.config
       make -j $(sysctl -n hw.ncpu) obsddist
