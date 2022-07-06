@@ -12,16 +12,19 @@ LIBS=\
 default: tlsclient
 
 tlsclient: cpu.$O $(LIBS)
-	$(CC) `pkg-config $(OPENSSL) --libs` -o $@ $^
+	$(CC) `pkg-config $(OPENSSL) --libs` -o $@ cpu.$O $(LIBS)
 
 login_-dp9ik: bsd.$O $(LIBS)
-	$(CC) -o $@ $^
+	$(CC) -o $@ bsd.$O $(LIBS)
 
 pam_p9.so: pam.$O $(LIBS)
-	$(CC) -shared -o $@ $^
+	$(CC) -shared -o $@ pam.$O $(LIBS)
+
+cpu.$O: cpu.c
+	$(CC) `pkg-config $(OPENSSL) --cflags` $(CFLAGS) $< -o $@
 
 %.$O: %.c
-	$(CC) `pkg-config $(OPENSSL) --cflags` $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 libauthsrv/libauthsrv.a:
 	(cd libauthsrv; $(MAKE))
