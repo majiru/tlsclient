@@ -1,6 +1,3 @@
-/*
- * cpu.c - Make a connection to a cpu server
- */
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -23,6 +20,8 @@ char *argv0;
 char *authserver;
 static char *user, *pass;
 
+char *shell[] = {"rc", "-i"};
+
 SSL_CTX *ssl_ctx;
 SSL *ssl_conn;
 
@@ -42,15 +41,13 @@ psk_client_cb(SSL *ssl, const char *hint, char *identity, uint max_iden_len, uch
 	return nsecret;
 }
 
-/*
- * p9any authentication followed by tls-psk encryption
- */
 static int
 p9authtls(int fd)
 {
 	ai = p9any(user, pass, fd);
 	if(ai == nil)
 		sysfatal("can't authenticate");
+	memset(pass, 0, strlen(pass));
 
 	SSL_set_fd(ssl_conn, fd);
 	if(SSL_connect(ssl_conn) < 0)
@@ -58,6 +55,9 @@ p9authtls(int fd)
 
 	return fd;
 }
+
+//clean exit signal handler
+void suicide(int num) { exit(0); }
 
 typedef size_t (*iofunc)(int, void*, size_t);
 size_t tls_send(int f, void *b, size_t n) { return SSL_write(ssl_conn, b, n); }
@@ -71,17 +71,8 @@ xfer(int from, int to, iofunc recvf, iofunc sendf)
 	char buf[12*1024];
 	size_t n;
 	
-	while((n = recvf(from, buf, sizeof buf)) > 0){
-		if(sendf(to, buf, n) < 0)
-			break;
-	}
-
-}
-
-void
-suicide(int num)
-{
-	exit(0);
+	while((n = recvf(from, buf, sizeof buf)) > 0 && sendf(to, buf, n) == n)
+		;
 }
 
 void
@@ -105,9 +96,9 @@ main(int argc, char **argv)
 	int pout[2];
 	int infd, outfd;
 	int i;
-	pid_t execc, xferc;
+	pid_t xferc;
 
-	execc = xferc = 0;
+	xferc = 0;
 	Rflag = 0;
 	infd = 0;
 	outfd = 1;
@@ -146,7 +137,7 @@ main(int argc, char **argv)
 	if(*argv && !Rflag){
 		pipe(pin);
 		pipe(pout);
-		switch((execc = fork())){
+		switch(fork()){
 		case -1:
 			sysfatal("fork");
 		case 0:
@@ -164,13 +155,15 @@ main(int argc, char **argv)
 	}
 
 	fd = unix_dial(host, port);
-	if(fd < 0){
-		sysfatal("Failed to connect to the client");
-	}
-
+	if(fd < 0)
+		sysfatal("failed to connect to the client");
 	p9authtls(fd);
 
-	if(*argv && Rflag) {
+	if(Rflag){
+		if(*argv == nil){
+			argv = shell;
+			argc = nelem(shell);
+		}
 		for(i=0,n=0; i<argc; i++)
 			n += snprint(buf+n, sizeof buf - n - 1, "%s ", argv[i]);
 		if(n <= 0)
@@ -183,9 +176,7 @@ main(int argc, char **argv)
 		tls_send(-1, buf, i);
 	}
 
-	//clean exit
 	signal(SIGUSR1, suicide);
-
 	switch((xferc = fork())){
 	case -1:
 		sysfatal("fork");
@@ -198,8 +189,5 @@ main(int argc, char **argv)
 		break;
 	}
 	kill(xferc, SIGUSR1);
-
-	if(execc)
-		kill(execc, SIGTERM);
 }
 

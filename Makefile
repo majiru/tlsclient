@@ -52,10 +52,10 @@ libc/libc.a:
 libsec/libsec.a:
 	(cd libsec; $(MAKE))
 
-linuxdist: tlsclient pam_p9.so 9cpu
-	tar cf tlsclient.tar tlsclient pam_p9.so 9cpu
+linuxdist: tlsclient pam_p9.so
+	tar cf tlsclient.tar tlsclient pam_p9.so
 	gzip tlsclient.tar
 
-obsddist: tlsclient login_-dp9ik 9cpu
-	tar cf tlsclient-obsd.tar tlsclient 9cpu login_-dp9ik
+obsddist: tlsclient login_-dp9ik
+	tar cf tlsclient-obsd.tar tlsclient login_-dp9ik
 	gzip tlsclient-obsd.tar

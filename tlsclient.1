@@ -1,0 +1,55 @@
+.TH TLSCLIENT 1
+.SH NAME
+tlsclient \- 9front tls client
+.SH SYNOPSIS
+.B tlsclient
+[
+.B -R
+]
+[
+.B -u
+.I user
+]
+[
+.B -h
+.I host
+]
+[
+.B -a
+.I auth
+]
+.B -p
+.I port
+command...
+.SH DESCRIPTION
+.B Tlsclient
+may be used to establish encrypted tls tunnels with 9front
+.B tlssrv
+servers using p9any to derive pre-shared keys. The
+.BR -u ,
+.BR -h ,
+and
+.B -a
+flags configure the paramaters for authentication.
+These paramaters may also be configured through the
+.IR USER ,
+.IR CPU ,
+and
+.IR AUTH ,
+environment variables respectively.
+.PP
+The
+.I command
+given is executed on the client, with its
+standard input and output pointing to the output and input
+of the remote connection. The
+.B -R
+flag changes this behavior, causing the
+.I command
+to be executed on the remote system in a
+similar fashion to 9front's rcpu. In this
+mode, if
+.I command
+is not specified a rc login shell is used.
+.SH BUGS
+Well, if you want 'em.
