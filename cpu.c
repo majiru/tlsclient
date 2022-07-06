@@ -181,6 +181,7 @@ main(int argc, char **argv)
 	case -1:
 		sysfatal("fork");
 	case 0:
+		xferc = getppid();
 		xfer(infd, -1, s_recv, tls_send);
 		break;
 	default:
