@@ -4,10 +4,8 @@ sources:
 packages:
   - "openssl-1.1.1k"
 artifacts:
-  - tlsclient/tlsclient-obsd.tar.gz
+  - tlsclient/obsd.tar.gz
 tasks:
   - build: |
       cd tlsclient
-      sed -i '/^OPENSSL/d' Make.config
-      sed -i 's/#OPENSSL/OPENSSL/g' Make.config
-      make -j $(sysctl -n hw.ncpu) obsddist
+      OPENSSL=eopenssl11 make -j $(sysctl -n hw.ncpu) obsd.tar.gz

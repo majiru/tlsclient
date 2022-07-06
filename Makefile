@@ -3,59 +3,49 @@ ROOT=.
 include ./Make.config
 
 LIBS=\
+	p9any.$O\
 	libauthsrv/libauthsrv.a\
 	libmp/libmp.a\
 	libc/libc.a\
 	libsec/libsec.a\
 
-OFILES=cpu.$O p9any.$O
+default: tlsclient
 
-default: $(TARG)
-$(TARG): $(LIBS) $(OFILES)
-	$(CC) `pkg-config $(OPENSSL) --libs` $(LDFLAGS) -o $(TARG) $(OFILES) $(LIBS) $(LDADD)
+tlsclient: cpu.$O $(LIBS)
+	$(CC) `pkg-config $(OPENSSL) --libs` -o $@ $^
 
-login_-dp9ik: $(LIBS) p9any.$O bsd.$O
-	$(CC) -o login_-dp9ik p9any.$O bsd.$O $(LIBS)
+login_-dp9ik: bsd.$O $(LIBS)
+	$(CC) -o $@ $^
 
-pam_p9.so: $(LIBS) p9any.$O pam.$O
-	$(CC) -shared -o pam_p9.so p9any.$O pam.$O $(LIBS)
+pam_p9.so: pam.$O $(LIBS)
+	$(CC) -shared -o $@ $^
 
-cpu.$O: cpu.c
-	$(CC) `pkg-config $(OPENSSL) --cflags` $(CFLAGS) cpu.c -o cpu.o
+%.$O: %.c
+	$(CC) `pkg-config $(OPENSSL) --cflags` $(CFLAGS) $< -o $@
 
-p9any.$O: p9any.c
-	$(CC) $(CFLAGS) p9any.c -o p9any.o
-
-pam.$O: pam.c
-	$(CC) $(CFLAGS) pam.c -o pam.o
-
-bsd.$O: bsd.c
-	$(CC) $(CFLAGS) bsd.c -o bsd.o
-
-.PHONY: clean
-clean:
-	rm -f *.o */*.o */*.a *.a $(TARG) pam_p9.so login_-dp9ik
-
-.PHONY: libauthsrv/libauthsrv.a
 libauthsrv/libauthsrv.a:
 	(cd libauthsrv; $(MAKE))
 
-.PHONY: libmp/libmp.a
 libmp/libmp.a:
 	(cd libmp; $(MAKE))
 
-.PHONY: libc/libc.a
 libc/libc.a:
 	(cd libc; $(MAKE))
 
-.PHONY: libsec/libsec.a
 libsec/libsec.a:
 	(cd libsec; $(MAKE))
 
-linuxdist: tlsclient pam_p9.so
-	tar cf tlsclient.tar tlsclient pam_p9.so
-	gzip tlsclient.tar
+.PHONY: clean
+clean:
+	rm -f *.o lib*/*.o lib*/*.a tlsclient pam_p9.so login_-dp9ik
 
-obsddist: tlsclient login_-dp9ik
-	tar cf tlsclient-obsd.tar tlsclient login_-dp9ik
-	gzip tlsclient-obsd.tar
+linux.tar.gz: tlsclient pam_p9.so tlsclient.1
+	tar c $^ | gzip > $@
+
+obsd.tar.gz: tlsclient login_-dp9ik tlsclient.1
+	tar c $^ | gzip > $@
+
+.PHONY: tlsclient.install
+tlsclient.install: tlsclient tlsclient.1
+	cp tlsclient $(PREFIX)/bin
+	cp tlsclient.1 $(PREFIX)/man/man1/
