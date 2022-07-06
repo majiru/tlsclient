@@ -79,6 +79,12 @@ xfer(int from, int to, iofunc recvf, iofunc sendf)
 }
 
 void
+suicide(int)
+{
+	exit(0);
+}
+
+void
 usage(void)
 {
 	fprint(2, "Usage: %s [ -R ] [ -u user ] [ -h host ] [ -a authserver ] -p port cmd...\n", argv0);
@@ -177,6 +183,9 @@ main(int argc, char **argv)
 		tls_send(-1, buf, i);
 	}
 
+	//clean exit
+	signal(SIGUSR1, suicide);
+
 	switch((xferc = fork())){
 	case -1:
 		sysfatal("fork");
@@ -188,9 +197,8 @@ main(int argc, char **argv)
 		xfer(-1, outfd, tls_recv, s_send);
 		break;
 	}
-	
-	if(xferc)
-		kill(xferc, SIGTERM);
+	kill(xferc, SIGUSR1);
+
 	if(execc)
 		kill(execc, SIGTERM);
 }
