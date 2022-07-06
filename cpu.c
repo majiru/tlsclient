@@ -79,7 +79,7 @@ xfer(int from, int to, iofunc recvf, iofunc sendf)
 }
 
 void
-suicide(int)
+suicide(int num)
 {
 	exit(0);
 }
