@@ -14,41 +14,48 @@ things like /mnt/term, but gain some more flexibility.
 
 Usage:
 	tlsclient [ -R ] [ -u user] [ -h host ] [ -a auth ] -p port cmd...
-	9cpu [ -u user ] [ -h host ] [ -a auth ] cmd...
 
 Example:
-	9cpu -u moody -h shithub.us -a p9auth.shithub.us newrepo tlsclient
+	tlsclient -R -u moody -h shithub.us -a p9auth.shithub.us newrepo tlsclient
 
 	# with git-remote-hjgit in your $PATH
 	git clone hjgit://shithub.us/user/repo
 
+Building:
+	$ make tlsclient
+
 OpenBSD:
 	OpenBSD uses LibreSSL in place of OpenSSL. Unfortunately LibreSSL does
-	not have PSK cipher suites. Tweak Make.config as required. Openssl is
-	only used for tlsclient and rcpu, login_-dp9ik does not require it.
+	not have the PSK cipher suites for tlsclient. As such, the openssl11
+	package is required, and a wrapper recipe is provided:
+
+	$ make tlsclient.obsd
 
 OpenBSD Authentication:
 	Build:
-		# Modify "char *authserver" in bsd.c to specify a default auth server
 		$ make login_-dp9ik
 	Testing:
-		./login_-dp9ik -d -v authserver="my.auth.server"
+		./login_-dp9ik -d $USER
 		# you will see authenticate/reject print out on stdout
 		# for success/failure.
 	Install:
 		$ cp login_-dp9ik /usr/libexec/auth/
 	Config:
+		Each user is allowed to specify an auth
+		server within '$HOME/.p9auth'. The file must
+		have no group or other permissions set.
+
 		Modify the auth-defaults line of /etc/login.conf
 		to use the new executable. This will look something like:
 
 		auth-defaults:auth=-dp9ik,passwd,skey:
 	Notes:
-		OpenBSD requires that all users regardless of
-		authentication mechanism exist in /etc/passwd.
-		OpenBSD does not retry with other mechanisms
-		if one sends a rejection, this means all
-		users(including root) must exist within the
-		auth server.
+		Unless you have a root user in your authdom, it is likely
+		that installing this may lock you out of the root user,
+		logging in with the username 'root:passwd' will authenticate
+		against the system passwd file.
+	See Also:
+		login(1)
 
 PAM Authentication:
 	Build:

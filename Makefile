@@ -1,5 +1,4 @@
 ROOT=.
-
 include ./Make.config
 
 LIBS=\
@@ -12,7 +11,7 @@ LIBS=\
 default: tlsclient
 
 tlsclient: cpu.$O $(LIBS)
-	$(CC) `pkg-config $(OPENSSL) --libs` -o $@ cpu.$O $(LIBS)
+	$(CC) `pkg-config $(OPENSSL) --libs` $(LDFLAGS) -o $@ cpu.$O $(LIBS)
 
 login_-dp9ik: bsd.$O $(LIBS)
 	$(CC) -o $@ bsd.$O $(LIBS)
@@ -43,10 +42,14 @@ clean:
 	rm -f *.o lib*/*.o lib*/*.a tlsclient pam_p9.so login_-dp9ik
 
 linux.tar.gz: tlsclient pam_p9.so tlsclient.1
-	tar c $^ | gzip > $@
+	tar cf - $^ | gzip > $@
 
-obsd.tar.gz: tlsclient login_-dp9ik tlsclient.1
-	tar c $^ | gzip > $@
+tlsclient.obsd: login_-dp9ik
+	OPENSSL=eopenssl11 LDFLAGS="$(LDFLAGS) -Xlinker --rpath=/usr/local/lib/eopenssl11/" $(MAKE) tlsclient
+	mv tlsclient tlsclient.obsd
+
+obsd.tar.gz: tlsclient.obsd tlsclient.1
+	tar cf - tlsclient login_-dp9ik tlsclient.1 | gzip > $@
 
 .PHONY: tlsclient.install
 tlsclient.install: tlsclient tlsclient.1
