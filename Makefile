@@ -55,3 +55,12 @@ obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1
 tlsclient.install: tlsclient tlsclient.1
 	cp tlsclient $(PREFIX)/bin
 	cp tlsclient.1 $(PREFIX)/man/man1/
+
+.PHONY: tlsclient.obsd.install
+tlsclient.obsd.install: tlsclient.obsd login_-dp9ik tlsclient.1
+	install tlsclient.obsd $(PREFIX)/bin/tlsclient
+	install tlsclient.1 $(PREFIX)/man/man1/
+	install -d $(PREFIX)/libexec/auth
+	install -g auth login_-dp9ik $(PREFIX)/libexec/auth/
+	install -d $(PREFIX)/libexec/git
+	install git-remote-hjgit $(PREFIX)/libexec/git
