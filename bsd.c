@@ -32,6 +32,7 @@
 
 #include <sys/types.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
 
 #include <errno.h>
 #include <pwd.h>
@@ -62,10 +63,14 @@ int
 main(int argc, char *argv[])
 {
 	FILE *back = NULL;
-	char *class = NULL, *username = NULL, *wheel = NULL;
+	char *username = NULL, *wheel = NULL;
 	char response[1024], pbuf[1024], *pass = "";
-	int ch, mode = 0, lastchance = 0, fd = -1;
+	char authconf[1024];
+	int n, afd;
+	int ch, mode = 0, fd = -1;
 	AuthInfo *ai;
+	struct stat sb;
+	char *p;
 
 	(void)signal(SIGQUIT, SIG_IGN);
 	(void)signal(SIGINT, SIG_IGN);
@@ -93,10 +98,6 @@ main(int argc, char *argv[])
 		case 'v':
 			if (strncmp(optarg, "wheel=", 6) == 0)
 				wheel = optarg + 6;
-			else if (strncmp(optarg, "lastchance=", 11) == 0)
-				lastchance = (strcmp(optarg + 11, "yes") == 0);
-			else if (strncmp(optarg, "authserver=", 11) == 0)
-				authserver = optarg + 11;
 			break;
 		default:
 			syslog(LOG_ERR, "usage error");
@@ -106,8 +107,6 @@ main(int argc, char *argv[])
 
 	switch (argc - optind) {
 	case 2:
-		class = argv[optind + 1];
-		/* FALLTHROUGH */
 	case 1:
 		username = argv[optind];
 		break;
@@ -120,6 +119,39 @@ main(int argc, char *argv[])
 		syslog(LOG_ERR, "reopening back channel: %m");
 		exit(1);
 	}
+
+	snprint(authconf, sizeof authconf, "/home/%s/.p9auth", username);
+	afd = open(authconf, OREAD);
+	if(afd < 0){
+		fprintf(back, BI_REJECT " errormsg %s\n",
+			"user does not have an authserver configured");
+		exit(0);
+	}
+	if(fstat(afd, &sb) < 0){
+		syslog(LOG_ERR, "could not stat: %m");
+		exit(1);
+	}
+	if(sb.st_mode & 077 != 0){
+		fprintf(back, BI_REJECT " errormsg %s\n",
+			"user authserver has improper permissions");
+		exit(0);
+	}
+	n = read(afd, authconf, sizeof authconf - 1);
+	if(n < 0){
+		fprintf(back, BI_REJECT " errormsg %s\n",
+			"could not read");
+		exit(1);
+	}
+	authserver = malloc(n+1);
+	if(authserver == NULL){
+		syslog(LOG_ERR, "oom");
+		exit(1);
+	}
+	memmove(authserver, authconf, n);
+	authserver[n] = '\0';
+	if((p = strchr(authserver, '\n')) != NULL)
+		*p = '\0';
+
 	if (wheel != NULL && strcmp(wheel, "yes") != 0) {
 		fprintf(back, BI_VALUE " errormsg %s\n",
 		    "you are not in group wheel");
