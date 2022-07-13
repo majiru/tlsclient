@@ -42,14 +42,14 @@ clean:
 	rm -f *.o lib*/*.o lib*/*.a tlsclient pam_p9.so login_-dp9ik
 
 linux.tar.gz: tlsclient pam_p9.so tlsclient.1
-	tar cf - $^ | gzip > $@
+	tar cf - tlsclient pam_p9.so tlsclient.1 | gzip > $@
 
-tlsclient.obsd: login_-dp9ik
+tlsclient.obsd:
 	OPENSSL=eopenssl11 LDFLAGS="$(LDFLAGS) -Xlinker --rpath=/usr/local/lib/eopenssl11/" $(MAKE) tlsclient
 	mv tlsclient tlsclient.obsd
 
-obsd.tar.gz: tlsclient.obsd tlsclient.1
-	tar cf - tlsclient login_-dp9ik tlsclient.1 | gzip > $@
+obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1
+	tar cf - tlsclient.obsd login_-dp9ik tlsclient.1 | gzip > $@
 
 .PHONY: tlsclient.install
 tlsclient.install: tlsclient tlsclient.1
