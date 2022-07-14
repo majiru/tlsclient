@@ -48,8 +48,8 @@ tlsclient.obsd:
 	OPENSSL=eopenssl11 LDFLAGS="$(LDFLAGS) -Xlinker --rpath=/usr/local/lib/eopenssl11/" $(MAKE) tlsclient
 	mv tlsclient tlsclient.obsd
 
-obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1
-	tar cf - tlsclient.obsd login_-dp9ik tlsclient.1 | gzip > $@
+obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
+	tar cf - tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8 | gzip > $@
 
 .PHONY: tlsclient.install
 tlsclient.install: tlsclient tlsclient.1
@@ -57,9 +57,10 @@ tlsclient.install: tlsclient tlsclient.1
 	cp tlsclient.1 $(PREFIX)/man/man1/
 
 .PHONY: tlsclient.obsd.install
-tlsclient.obsd.install: tlsclient.obsd login_-dp9ik tlsclient.1
+tlsclient.obsd.install: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
 	install tlsclient.obsd $(PREFIX)/bin/tlsclient
 	install tlsclient.1 $(PREFIX)/man/man1/
+	install login_-dp9ik.8 $(PREFIX)/man/man8/
 	install -d $(PREFIX)/libexec/auth
 	install -g auth login_-dp9ik $(PREFIX)/libexec/auth/
 	install -d $(PREFIX)/libexec/git
