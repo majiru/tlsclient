@@ -49,7 +49,8 @@ p9authtls(int fd)
 		sysfatal("can't authenticate");
 	memset(pass, 0, strlen(pass));
 
-	SSL_set_fd(ssl_conn, fd);
+	if(SSL_set_fd(ssl_conn, fd) == 0)
+		sysfatal("set fd failed");
 	if(SSL_connect(ssl_conn) < 0)
 		sysfatal("ssl could not connect");
 
@@ -130,9 +131,17 @@ main(int argc, char **argv)
 	SSL_load_error_strings();
 	ssl_ctx = SSL_CTX_new(TLSv1_2_client_method());
 	SSL_CTX_set_psk_client_callback(ssl_ctx, psk_client_cb);
+
+#if OPENSSL_VERSION_MAJOR==3
+	/* 9front support for RFC 5746 is not guranteed but we never do renegotiation anyway... */
+	SSL_CTX_set_options(ssl_ctx, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+#endif
+
 	if(ssl_ctx == nil)
 		sysfatal("could not init openssl");
 	ssl_conn = SSL_new(ssl_ctx);
+	if(ssl_conn == nil)
+		sysfatal("could not init openssl");
 
 	if(*argv && !Rflag){
 		pipe(pin);
