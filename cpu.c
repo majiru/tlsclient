@@ -18,7 +18,7 @@
 char *argv0;
 
 char *authserver;
-static char *user, *pass;
+static char *user, *pass, *askpass;
 
 char *shell[] = {"rc", "-i"};
 
@@ -55,6 +55,32 @@ p9authtls(int fd)
 		sysfatal("ssl could not connect");
 
 	return fd;
+}
+
+static void
+doaskpass(void)
+{
+	int p[2];
+
+	pipe(p);
+	switch(fork()){
+	case -1:
+		sysfatal("fork");
+	case 0:
+		close(p[0]);
+		dup2(p[1], 1);
+		execlp(askpass, askpass, nil);
+		sysfatal("failed to exec askpass");
+		break;
+	default:
+		close(p[1]);
+		pass = mallocz(1024, 1);
+		int n = read(p[0], pass, 1024);
+		if(n <= 1)
+			sysfatal("askpass gave empty password");
+		pass[n-1] = 0;
+		break;
+	}
 }
 
 //clean exit signal handler
@@ -123,8 +149,12 @@ main(int argc, char **argv)
 	if(user == nil || host == nil || authserver == nil || port == nil)
 		usage();
 
-	if(pass == nil)
-		pass = getpass("password:");
+	if(pass == nil){
+		if((askpass = getenv("TLSCLIENT_ASKPASS")) != nil)
+			doaskpass();
+		else
+			pass = getpass("password:");
+	}
 
 	SSL_library_init();
 	OpenSSL_add_all_algorithms();

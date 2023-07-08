@@ -51,5 +51,18 @@ similar fashion to 9front's rcpu. In this
 mode, if
 .I command
 is not specified a rc login shell is used.
+.SH PASSWORDS
+By default
+.B tlsclient
+will ask for the users' password through
+.BR getpass (3).
+For non interactive use the
+.I PASS
+environment variable may be used to specify
+the password literal and
+.I TLSCLIENT_ASKPASS
+may be set to a program that will be executed
+to provide the password on stdout.
 .SH BUGS
-Well, if you want 'em.
+The lack of factotum and portable namespaces make
+this password business not fun.
