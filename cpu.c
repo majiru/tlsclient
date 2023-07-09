@@ -146,7 +146,7 @@ main(int argc, char **argv)
 	if(Rflag)
 		port = "17019";
 
-	if(user == nil || host == nil || authserver == nil || port == nil)
+	if(user == nil || host == nil || port == nil)
 		usage();
 
 	if(pass == nil){

@@ -64,9 +64,6 @@ unix_dial(char *host, char *port)
 
 		break;  /* okay we got one */
 	}
-	if (s == -1) {
-		err(1, "%s", cause);
-	}
 	return s;
 }
 
