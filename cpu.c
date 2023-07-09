@@ -69,7 +69,7 @@ doaskpass(void)
 	case 0:
 		close(p[0]);
 		dup2(p[1], 1);
-		execlp(askpass, askpass, nil);
+		execlp("sh", "sh", "-c", askpass, nil);
 		sysfatal("failed to exec askpass");
 		break;
 	default:
