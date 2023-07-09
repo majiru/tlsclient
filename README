@@ -1,7 +1,6 @@
 tlsclient: tlsclient(1) for unix
 
 This repo contains:
-	9cpu: rcpu(1) on unix
 	tlsclient: tlsclient(1) on unix
 	git-remote-hjgit: git remote helper for using hjgit repos.
 	pam_p9.so: A pam module that authenticates against a 9front auth server.
