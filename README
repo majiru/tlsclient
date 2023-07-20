@@ -5,6 +5,7 @@ This repo contains:
 	git-remote-hjgit: git remote helper for using hjgit repos.
 	pam_p9.so: A pam module that authenticates against a 9front auth server.
 	login_-dp9ik: An OpenBSD bsd auth executable that auths against a 9front auth server.
+	mount.9ptls: A Linux mount helper that wraps a traditional Linux v9fs in a tlsclient tunnel.
 
 Most of the tlsclient code is pillaged from jsdrawterm: https://github.com/aiju/jsdrawterm
 The main difference between tlsclient and drawterm is that tlsclient has stripped out the
@@ -20,6 +21,9 @@ Example:
 	# with git-remote-hjgit in your $PATH
 	git clone hjgit://shithub.us/user/repo
 
+	# with mount.9ptls in /sbin
+	mount -t 9ptls -o user=moody,port=9090,uid=moody flan n
+
 Building:
 	$ make tlsclient
 
@@ -29,6 +33,12 @@ OpenBSD:
 	package is required, and a wrapper recipe is provided:
 
 	$ make tlsclient.obsd
+
+Mount Helper:
+	Build:
+		$ make mount.9ptls
+	Install:
+		$ make mount.9ptls.install
 
 OpenBSD Authentication:
 	Build:
