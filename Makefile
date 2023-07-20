@@ -52,7 +52,7 @@ tlsclient.obsd:
 	mv tlsclient tlsclient.obsd
 
 obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
-	tar cf - $^ | gzip > $@
+	tar cf - tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8 | gzip > $@
 
 .PHONY: tlsclient.install
 tlsclient.install: tlsclient tlsclient.1
