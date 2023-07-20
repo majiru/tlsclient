@@ -4,7 +4,7 @@ tlsclient \- 9front tls client
 .SH SYNOPSIS
 .B tlsclient
 [
-.B -R
+.B -bR
 ]
 [
 .B -u
@@ -51,6 +51,9 @@ similar fashion to 9front's rcpu. In this
 mode, if
 .I command
 is not specified a rc login shell is used.
+The
+.B -b
+flag causes tlsclient to fork into the background.
 .SH PASSWORDS
 By default
 .B tlsclient

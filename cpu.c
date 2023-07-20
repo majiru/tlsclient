@@ -106,7 +106,7 @@ xfer(int from, int to, iofunc recvf, iofunc sendf)
 void
 usage(void)
 {
-	fprint(2, "Usage: %s [ -R ] [ -u user ] [ -h host ] [ -a authserver ] -p port cmd...\n", argv0);
+	fprint(2, "Usage: %s [ -Rb ] [ -u user ] [ -h host ] [ -a authserver ] -p port cmd...\n", argv0);
 	exits("usage");
 }
 
@@ -114,6 +114,7 @@ int
 main(int argc, char **argv)
 {
 	int Rflag;
+	int bflag;
 	int fd;
 	char buf2[1024];
 	char buf[1024];
@@ -127,7 +128,7 @@ main(int argc, char **argv)
 	pid_t xferc;
 
 	xferc = 0;
-	Rflag = 0;
+	Rflag = bflag = 0;
 	infd = 0;
 	outfd = 1;
 	user = getenv("USER");	
@@ -142,6 +143,8 @@ main(int argc, char **argv)
 		case 'a': authserver = EARGF(usage()); break;
 		case 'p': port = EARGF(usage()); break;
 		case 'R': Rflag++; break;
+		case 'b': bflag++; break;
+		default: usage(); break;
 	} ARGEND
 
 	if(Rflag)
@@ -214,6 +217,17 @@ main(int argc, char **argv)
 		snprint(buf2, sizeof buf2, "%7d\n", i);
 		tls_send(-1, buf2, strlen(buf2));
 		tls_send(-1, buf, i);
+	}
+
+	if(bflag){
+		switch(fork()){
+		case -1:
+			sysfatal("fork");
+		case 0:
+			break;
+		default:
+			return 0;
+		}
 	}
 
 	signal(SIGUSR1, suicide);
