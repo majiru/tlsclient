@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#define OPENSSL_API_COMPAT 0x10000000L
 #include <openssl/ssl.h>
 
 #include <u.h>

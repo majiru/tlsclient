@@ -54,7 +54,7 @@ obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
 .PHONY: tlsclient.install
 tlsclient.install: tlsclient tlsclient.1
 	cp tlsclient $(PREFIX)/bin
-	cp tlsclient.1 $(PREFIX)/man/man1/
+	cp tlsclient.1 $(PREFIX)/share/man/man1/
 
 .PHONY: tlsclient.obsd.install
 tlsclient.obsd.install: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8

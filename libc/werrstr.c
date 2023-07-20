@@ -4,6 +4,15 @@
 char errbuf[ERRMAX];
 
 int
+errstr(char *buf, uint n)
+{
+	if(n > ERRMAX)
+		n = ERRMAX;
+	utfecpy(errbuf, errbuf+n, buf);
+	return utflen(buf);
+}
+
+int
 rerrstr(char *buf, uint n)
 {
 	utfecpy(buf, buf+n, errbuf);

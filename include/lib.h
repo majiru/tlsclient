@@ -291,6 +291,17 @@ extern int (*fmtdoquote)(int);
 extern void exits(char*);
 extern long readn(int, void*, long);
 
+extern	ulong	truerand(void);
+
+extern	int	errstr(char*, uint);
+extern	int	rerrstr(char*, uint);
+extern	void	werrstr(char*, ...);
+
+/*
+ * crypt routines
+ */
+extern	int	encrypt(void*, void*, int);
+extern	int	decrypt(void*, void*, int);
 
 /*
  * Time-of-day

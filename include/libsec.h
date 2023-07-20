@@ -468,10 +468,6 @@ void	freeThumbprints(Thumbprint *ok);
 int	okThumbprint(uchar *hash, int len, Thumbprint *ok);
 int	okCertificate(uchar *cert, int len, Thumbprint *ok);
 
-/* readcert.c */
-uchar	*readcert(char *filename, int *pcertlen);
-PEMChain*readcertchain(char *filename);
-
 /* aes_xts.c */
 void aes_xts_encrypt(AESstate *tweak, AESstate *ecb, uvlong sectorNumber, uchar *input, uchar *output, ulong len);
 void aes_xts_decrypt(AESstate *tweak, AESstate *ecb, uvlong sectorNumber, uchar *input, uchar *output, ulong len);

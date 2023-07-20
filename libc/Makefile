@@ -64,16 +64,11 @@ OFILES=\
 	convS2M.$O\
 	ctime.$O\
 	crypt.$O\
-	dirfstat.$O\
-	dirfwstat.$O\
 	dirmodefmt.$O\
-	dirstat.$O\
-	dirwstat.$O\
 	fprint.$O\
 	getfields.$O\
 	getpid.$O\
 	netmkaddr.$O\
-	nsec.$O\
 	pow10.$O\
 	pushssl.$O\
 	pushtls.$O\

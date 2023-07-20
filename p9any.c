@@ -17,8 +17,6 @@
 
 #include "fncs.h"
 
-void errstr(char *s){}
-
 char*
 estrdup(char *s)
 {
@@ -35,7 +33,6 @@ unix_dial(char *host, char *port)
 	int error;
 	int save_errno;
 	int s;
-	const char *cause = NULL;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
@@ -50,11 +47,9 @@ unix_dial(char *host, char *port)
 	for (res = res0; res; res = res->ai_next) {
 		s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (s == -1) {
-			cause = "socket";
 			continue;
 		}
 		if (connect(s, res->ai_addr, res->ai_addrlen) == -1) {
-			cause = "connect";
 			save_errno = errno;
 			close(s);
 			errno = save_errno;
