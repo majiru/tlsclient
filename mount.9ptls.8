@@ -1,0 +1,63 @@
+.Dd July 20, 2023
+.Dt MOUNT.9PTLS 8
+.Os tlsclient
+.
+.Sh NAME
+.Nm mount.9ptls
+.Nd tlsclient mount helper
+.Sh SYNOPSIS
+.Nm
+.Op Fl sfnvh
+.Op Fl N Ar namespace
+.Op Fl o Ar options
+.Ar fileserver
+.Ar mountpoint
+.
+.Sh DESCRIPTION
+The
+.Nm
+helper is used by
+.Xr mount 8
+to wrap a 9p filesystem through a dp9ik authenticated
+tls tunnel provided by
+.Xr tlsclient 1 .
+This is accomplished by interpreting the arguments provided,
+setting up the connection and then passing the file descriptiors
+to the kernel 9p mount.
+.Ar Fileserver
+is connected to over TCP, doing DNS resolution as required.
+As there is no standard port for this type of service a
+.Fl o Ar port
+option is required.
+.
+.Sh OPTIONS
+The
+.Fl s ,
+.Fl f ,
+.Fl n ,
+.Fl v ,
+and
+.Fl N
+flags are passed to
+.Xr mount 8
+without any interpretation by
+.Nm .
+Most
+.Ar options
+are passed through untouched, with
+.Nm
+ingesting the
+.Ar port
+and
+.Ar auth
+.Ar options
+for itself. The former specifying the
+port to connect to
+.Ar fileserver
+on and the later specifying the hostname of the mutal authentication
+server that is to be used in the dp9ik handshake.
+.
+.Sh SEE ALSO
+.Xr tlsclient 1 ,
+.Xr fstab 5 ,
+.Xr mount 8

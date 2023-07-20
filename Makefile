@@ -22,6 +22,9 @@ pam_p9.so: pam.$O $(LIBS)
 cpu.$O: cpu.c
 	$(CC) `pkg-config $(OPENSSL) --cflags` $(CFLAGS) $< -o $@
 
+mount.9ptls: mount.$O
+	$(CC) $(LDFLAGS) -o $@ $<
+
 %.$O: %.c
 	$(CC) $(CFLAGS) $< -o $@
 
@@ -39,7 +42,7 @@ libsec/libsec.a:
 
 .PHONY: clean
 clean:
-	rm -f *.o lib*/*.o lib*/*.a tlsclient pam_p9.so login_-dp9ik
+	rm -f *.o lib*/*.o lib*/*.a tlsclient pam_p9.so login_-dp9ik mount.9ptls
 
 linux.tar.gz: tlsclient pam_p9.so tlsclient.1
 	tar cf - tlsclient pam_p9.so tlsclient.1 | gzip > $@
