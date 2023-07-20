@@ -56,13 +56,15 @@ obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
 
 .PHONY: tlsclient.install
 tlsclient.install: tlsclient tlsclient.1
-	install -Dm755 -t $(PREFIX)/bin tlsclient
-	install -Dm644 -T tlsclient.1 $(PREFIX)/share/man/man1/tlsclient.1
+	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
+	install -m755 tlsclient $(PREFIX)/bin/
+	install -m644 tlsclient.1 $(PREFIX)/share/man/man1/
 
 .PHONY: mount.9ptls.install
 mount.9ptls.install: mount.9ptls mount.9ptls.8
-	install -Dm755 -t /sbin mount.9ptls
-	install -Dm644 -T mount.9ptls.8 $(PREFIX)/share/man/man8/mount.9ptls.8
+	mkdir -p $(PREFIX)/share/man/man8/
+	install -m755 mount.9ptls /sbin/
+	install -m644 mount.9ptls.8 $(PREFIX)/share/man/man8/
 
 .PHONY: tlsclient.obsd.install
 tlsclient.obsd.install: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
