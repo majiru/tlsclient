@@ -44,8 +44,8 @@ libsec/libsec.a:
 clean:
 	rm -f *.o lib*/*.o lib*/*.a tlsclient pam_p9.so login_-dp9ik mount.9ptls
 
-linux.tar.gz: tlsclient pam_p9.so tlsclient.1
-	tar cf - tlsclient pam_p9.so tlsclient.1 | gzip > $@
+linux.tar.gz: tlsclient pam_p9.so mount.9ptls tlsclient.1 mount.9ptls.8
+	tar cf - $< | gzip > $@
 
 tlsclient.obsd:
 	OPENSSL=eopenssl11 LDFLAGS="$(LDFLAGS) -Xlinker --rpath=/usr/local/lib/eopenssl11/" $(MAKE) tlsclient
@@ -58,6 +58,11 @@ obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
 tlsclient.install: tlsclient tlsclient.1
 	install -Dm755 -t $(PREFIX)/bin tlsclient
 	install -Dm644 -T tlsclient.1 $(PREFIX)/share/man/man1/tlsclient.1
+
+.PHONY: mount.9ptls.install
+mount.9ptls.install: mount.9ptls mount.9ptls.8
+	install -Dm755 -t $(PREFIX)/sbin mount.9ptls
+	install -Dm644 -T mount.9ptls.8 $(PREFIX)/share/man/man8/mount.9ptls.8
 
 .PHONY: tlsclient.obsd.install
 tlsclient.obsd.install: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
