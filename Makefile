@@ -62,8 +62,8 @@ tlsclient.install: tlsclient tlsclient.1
 
 .PHONY: mount.9ptls.install
 mount.9ptls.install: mount.9ptls mount.9ptls.8
-	mkdir -p $(PREFIX)/share/man/man8/
-	install -m755 mount.9ptls /sbin/
+	mkdir -p $(PREFIX)/share/man/man8/ $(SBIN)
+	install -m755 mount.9ptls $(SBIN)
 	install -m644 mount.9ptls.8 $(PREFIX)/share/man/man8/
 
 .PHONY: tlsclient.obsd.install
