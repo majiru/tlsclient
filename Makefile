@@ -66,6 +66,11 @@ mount.9ptls.install: mount.9ptls mount.9ptls.8
 	install -m755 mount.9ptls $(SBIN)
 	install -m644 mount.9ptls.8 $(PREFIX)/share/man/man8/
 
+.PHONY: pam.install
+pam.install: pam_p9.so
+	mkdir -p $(PREFIX)/lib/security
+	install -m755 pam_p9.so $(PREFIX)/lib/security
+
 .PHONY: tlsclient.obsd.install
 tlsclient.obsd.install: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
 	install tlsclient.obsd $(PREFIX)/bin/tlsclient
