@@ -26,6 +26,7 @@ static int optargc = 0;
 static char *port = NULL;
 static char *user = NULL;
 static char *authbox = NULL;
+static char *askpass = "/usr/bin/env systemd-ask-password";
 
 static void
 appendarg(char *s)
@@ -59,6 +60,9 @@ appendopt(char *key, char *val)
 		return;
 	} else if(strcmp(key, "auth") == 0){
 		authbox = strdup(val);
+		return;
+	} else if(strcmp(key, "askpass") == 0){
+		askpass = strdup(val);
 		return;
 	} else if(strcmp(key, "user") == 0){
 		user = strdup(val);
@@ -182,6 +186,7 @@ main(int argc, char **argv)
 		errx(EINVAL, "a port option must be given");
 	if(user == NULL && (user = getenv("USER")) == NULL)
 		errx(EINVAL, "user option not given and count not infer");
+	setenv("TLSCLIENT_ASKPASS", askpass, 1);
 	flattenoptions(options, sizeof options);
 
 	appendarg("tlsclient");
