@@ -103,7 +103,7 @@ parseoptions(char *opt)
 		if(key == NULL)
 			key = s;
 	}
-	if(key != NULL && val != NULL)
+	if(key != NULL)
 		appendopt(key, val);
 
 	_appendopt("trans", "fd");
