@@ -80,12 +80,22 @@ parseoptions(char *opt)
 {
 	char *s;
 	char *key, *val;
+	int inquote;
 
 	key = val = NULL;
+	inquote = 0;
 	for(s = opt; *s != '\0'; s++){
+		if(key == NULL)
+			key = s;
+		if(*s == '"'){
+			inquote = !inquote;
+			continue;
+		}
+		if(inquote)
+			continue;
 		switch(*s){
 		case '=':
-			if(key == NULL)
+			if(key == s)
 				errx(EINVAL, "option argument has no key, only a value");
 			*s = '\0';
 			if(s[1] == '\0')
@@ -93,16 +103,16 @@ parseoptions(char *opt)
 			val = s+1;
 			continue;
 		case ',':
-			if(key == NULL)
+			if(key == s)
 				errx(EINVAL, "extra comma");
 			*s = '\0';
 			appendopt(key, val);
 			key = val = NULL;
 			continue;
 		}
-		if(key == NULL)
-			key = s;
 	}
+	if(inquote)
+		errx(EINVAL, "unterminated double quote");
 	if(key != NULL)
 		appendopt(key, val);
 
