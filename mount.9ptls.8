@@ -22,7 +22,7 @@ to wrap a 9p filesystem through a dp9ik authenticated
 tls tunnel provided by
 .Xr tlsclient 1 .
 This is accomplished by interpreting the arguments provided,
-setting up the connection and then passing the file descriptiors
+setting up the connection and then passing the file descriptors
 to the kernel 9p mount.
 .Ar Fileserver
 is connected to over TCP, doing DNS resolution as required.
@@ -31,31 +31,30 @@ As there is no standard port for this type of service a
 option is required.
 .
 .Sh OPTIONS
-The
-.Fl s ,
-.Fl f ,
-.Fl n ,
-.Fl v ,
-and
-.Fl N
-flags are passed to
-.Xr mount 8
-without any interpretation by
-.Nm .
-Most
+The following
 .Ar options
-are passed through untouched, with
+are ingested by
+.Nm :
+.Bl -tag -width "-o xa"
+.It Ar port
+The TCP port to connect to the
+.Ar filserver
+on.
+.It Ar auth
+The shared 9front authentication server to use between
 .Nm
-ingesting the
-.Ar port
-and
-.Ar auth
+and the
+.Ar fileserver .
+.It Ar askpass
+The program that is executed to prompt the user for their password.
+If this is not specified it defaults to
+.Xr systemd-ask-password 1 .
+.El
+.Pp
+All remaining flags and
 .Ar options
-for itself. The former specifying the
-port to connect to the
-.Ar fileserver
-on and the later specifying the hostname of the mutal authentication
-server that is to be used in the dp9ik handshake.
+are preserved as-is and passed along to the resulting 9p fs
+mount call.
 .
 .Sh SEE ALSO
 .Xr tlsclient 1 ,
