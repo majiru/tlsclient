@@ -14,14 +14,12 @@
 
 #include "fncs.h"
 
-/* pasword change TODO */
 PAM_EXTERN int
 pam_sm_setcred(pam_handle_t *pamh, int flags, int argc, const char **argv )
 {
 	return PAM_SUCCESS;
 }
 
-/* For checking if the user has expired, has access to specific machine etc */
 PAM_EXTERN int
 pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
@@ -30,7 +28,6 @@ pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const char **argv)
 
 char *authserver;
 
-/* expected hook, this is where custom stuff happens */
 PAM_EXTERN int
 pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv )
 {
@@ -54,6 +51,8 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv )
 		return PAM_AUTH_ERR;
 
 	ai = p9any(username, password, fd);
+	close(fd);
+
 	if(ai == nil)
 		return PAM_AUTH_ERR;
 
