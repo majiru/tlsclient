@@ -63,7 +63,8 @@ doaskpass(void)
 {
 	int p[2];
 
-	pipe(p);
+	if(pipe(p) < 0)
+		sysfatal("pipe failed");
 	switch(fork()){
 	case -1:
 		sysfatal("fork");
@@ -87,18 +88,18 @@ doaskpass(void)
 //clean exit signal handler
 void suicide(int num) { exit(0); }
 
-typedef size_t (*iofunc)(int, void*, size_t);
-size_t tls_send(int f, void *b, size_t n) { return SSL_write(ssl_conn, b, n); }
-size_t tls_recv(int f, void *b, size_t n) { return SSL_read(ssl_conn, b, n); }
-size_t s_send(int f, void *b, size_t n) { return write(f, b, n); }
-size_t s_recv(int f, void *b, size_t n) { return read(f, b, n); }
+typedef ssize_t (*iofunc)(int, void*, size_t);
+ssize_t tls_send(int f, void *b, size_t n) { return SSL_write(ssl_conn, b, n); }
+ssize_t tls_recv(int f, void *b, size_t n) { return SSL_read(ssl_conn, b, n); }
+ssize_t s_send(int f, void *b, size_t n) { return write(f, b, n); }
+ssize_t s_recv(int f, void *b, size_t n) { return read(f, b, n); }
 
 void
 xfer(int from, int to, iofunc recvf, iofunc sendf)
 {
 	char buf[12*1024];
-	size_t n;
-	
+	ssize_t n;
+
 	while((n = recvf(from, buf, sizeof buf)) > 0 && sendf(to, buf, n) == n)
 		;
 }
@@ -178,8 +179,8 @@ main(int argc, char **argv)
 		sysfatal("could not init openssl");
 
 	if(*argv && !Rflag){
-		pipe(pin);
-		pipe(pout);
+		if(pipe(pin) < 0 || pipe(pout) < 0)
+			sysfatal("pipe");
 		switch(fork()){
 		case -1:
 			sysfatal("fork");
