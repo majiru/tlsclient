@@ -74,8 +74,8 @@ pam.install: pam_p9.so
 .PHONY: tlsclient.obsd.install
 tlsclient.obsd.install: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
 	install tlsclient.obsd $(PREFIX)/bin/tlsclient
-	install tlsclient.1 $(PREFIX)/man/man1/
-	install login_-dp9ik.8 $(PREFIX)/man/man8/
+	install tlsclient.1 $(PREFIX)/share/man/man1/
+	install login_-dp9ik.8 $(PREFIX)/share/man/man8/
 	install -d $(PREFIX)/libexec/auth
 	install -g auth login_-dp9ik $(PREFIX)/libexec/auth/
 	install -d $(PREFIX)/libexec/git
