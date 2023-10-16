@@ -11,7 +11,7 @@ LIBS=\
 default: tlsclient
 
 tlsclient: cpu.$O $(LIBS)
-	$(CC) `pkg-config $(OPENSSL) --libs` $(LDFLAGS) -o $@ cpu.$O $(LIBS)
+	$(CC) -o $@ cpu.$O $(LIBS) `pkg-config $(OPENSSL) --libs` $(LDFLAGS)
 
 login_-dp9ik: bsd.$O $(LIBS)
 	$(CC) -o $@ bsd.$O $(LIBS)
