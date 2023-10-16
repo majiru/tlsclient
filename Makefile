@@ -11,7 +11,7 @@ LIBS=\
 default: tlsclient
 
 tlsclient: cpu.$O $(LIBS)
-	$(CC) -o $@ cpu.$O $(LIBS) `pkg-config $(OPENSSL) --libs` $(LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ cpu.$O $(LIBS) `pkg-config $(OPENSSL) --libs`
 
 login_-dp9ik: bsd.$O $(LIBS)
 	$(CC) -o $@ bsd.$O $(LIBS)
@@ -48,7 +48,7 @@ linux.tar.gz: tlsclient pam_p9.so mount.9ptls tlsclient.1 mount.9ptls.8
 	tar cf - $^ | gzip > $@
 
 tlsclient.obsd:
-	OPENSSL=eopenssl11 LDFLAGS="$(LDFLAGS) -Xlinker --rpath=/usr/local/lib/eopenssl11/" $(MAKE) tlsclient
+	OPENSSL=eopenssl31 LDFLAGS="$(LDFLAGS) -Xlinker --rpath=/usr/local/lib/eopenssl11/" $(MAKE) tlsclient
 	mv tlsclient tlsclient.obsd
 
 obsd.tar.gz: tlsclient.obsd login_-dp9ik tlsclient.1 login_-dp9ik.8
