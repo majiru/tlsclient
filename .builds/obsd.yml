@@ -2,10 +2,10 @@ image: openbsd/latest
 sources:
   - https://git.sr.ht/~moody/tlsclient
 packages:
-  - "openssl-1.1.1t"
+  - "openssl-3.1.0p1"
 artifacts:
   - tlsclient/obsd.tar.gz
 tasks:
   - build: |
       cd tlsclient
-      OPENSSL=eopenssl11 make -j $(sysctl -n hw.ncpu) obsd.tar.gz
+      OPENSSL=eopenssl31 make -j $(sysctl -n hw.ncpu) obsd.tar.gz
