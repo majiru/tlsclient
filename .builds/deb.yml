@@ -5,6 +5,7 @@ artifacts:
   - tlsclient/linux.tar.gz
 packages:
   - "libssl-dev"
+  - "pkg-config"
 tasks:
   - build: | 
       cd tlsclient
