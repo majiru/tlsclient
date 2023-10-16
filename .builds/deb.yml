@@ -6,6 +6,7 @@ artifacts:
 packages:
   - "libssl-dev"
   - "pkg-config"
+  - "libpam-dev"
 tasks:
   - build: | 
       cd tlsclient
