@@ -2,7 +2,7 @@ image: openbsd/latest
 sources:
   - https://git.sr.ht/~moody/tlsclient
 packages:
-  - "openssl-3.1.0p1"
+  - "openssl-3.1.5p2v0"
 artifacts:
   - tlsclient/obsd.tar.gz
 tasks:
