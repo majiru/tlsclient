@@ -9,7 +9,7 @@ This repo contains:
 
 Most of the tlsclient code is pillaged from jsdrawterm: https://github.com/aiju/jsdrawterm
 The main difference between tlsclient and drawterm is that tlsclient has stripped out the
-plan9 kernel that runs in userspace. This means we use openssl for TLS and and don't provide
+plan9 kernel that runs in userspace. This means we use openssl for TLS and don't provide
 things like /mnt/term, but gain some more flexibility.
 
 Usage:
