@@ -31,8 +31,8 @@ char *authserver;
 PAM_EXTERN int
 pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv )
 {
-	char *username;
-	char *password;
+	const char *username;
+	const char *password;
 	int fd;
 	AuthInfo *ai;
 
