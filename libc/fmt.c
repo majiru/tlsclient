@@ -64,9 +64,6 @@ static Convfmt knownfmt[] = {
 	0,	0,
 };
 
-
-int	(*fmtdoquote)(int);
-
 /*
  * __fmtlock() must be set
  */

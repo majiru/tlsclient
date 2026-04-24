@@ -228,7 +228,6 @@ extern	int	sprint(char*, char*, ...);
 extern	int	fprint(int, char*, ...);
 extern	int	vfprint(int, char*, va_list);
 
-extern	int	(*doquote)(int);
 extern	int	runesprint(Rune*, char*, ...);
 extern	int	runesnprint(Rune*, int, char*, ...);
 extern	int	runevsnprint(Rune*, int, char*, va_list);
@@ -285,8 +284,6 @@ extern	vlong	strtoll(const char *, char **, int);
 extern	int	utfnlen(char*, long);
 extern	double	__Inf(int);
 extern	int	__isInf(double, int);
-
-extern int (*fmtdoquote)(int);
 
 extern void exits(char*);
 extern long readn(int, void*, long);

@@ -2,6 +2,16 @@
 #include <libc.h>
 #include "fmtdef.h"
 
+static int
+fmtdoquote(int c)
+{
+	if(c <= ' ')
+		return 1;
+	if(utfrune("`^#*[]=|\\?${}()'<>&;", c))
+		return 1;
+	return 0;
+}
+
 /*
  * How many bytes of output UTF will be produced by quoting (if necessary) this string?
  * How many runes? How much of the input will be consumed?
@@ -51,7 +61,7 @@ __quotesetup(char *s, Rune *r, int nin, int nout, Quoteinfo *q, int sharp, int r
 				break;
 		}
 
-		if((c <= L' ') || (c == L'\'') || (fmtdoquote!=0 && fmtdoquote(c))){
+		if((c <= L' ') || (c == L'\'') || fmtdoquote(c)){
 			if(!q->quoted){
 				if(runesout){
 					if(1+q->nrunesout+1+1 > nout)	/* no room for quotes */

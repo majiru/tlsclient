@@ -1,5 +1,6 @@
 ROOT=..
 include ../Make.config
+# N.B.  This is used only for secstore.  It needn't be fast.
 
 LIB=libmp.a
 

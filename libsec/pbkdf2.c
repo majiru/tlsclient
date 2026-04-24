@@ -3,7 +3,9 @@
 
 /* rfc2898 */
 void
-pbkdf2_x(uchar *p, ulong plen, uchar *s, ulong slen, ulong rounds, uchar *d, ulong dlen, DigestState* (*x)(uchar*, ulong, uchar*, ulong, uchar*, DigestState*), int xlen)
+pbkdf2_x(uchar *p, ulong plen, uchar *s, ulong slen,
+	ulong rounds, uchar *d, ulong dlen,
+	DigestState* (*x)(uchar*, ulong, uchar*, ulong, uchar*, DigestState*), int xlen)
 {
 	uchar block[256], tmp[256];
 	ulong i, j, k, n;

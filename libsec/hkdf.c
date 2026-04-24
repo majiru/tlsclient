@@ -3,7 +3,9 @@
 
 /* rfc5869 */
 void
-hkdf_x(uchar *salt, ulong nsalt, uchar *info, ulong ninfo, uchar *key, ulong nkey, uchar *d, ulong dlen, DigestState* (*x)(uchar*, ulong, uchar*, ulong, uchar*, DigestState*), int xlen)
+hkdf_x(uchar *salt, ulong nsalt, uchar *info, ulong ninfo,
+	uchar *key, ulong nkey, uchar *d, ulong dlen,
+	DigestState* (*x)(uchar*, ulong, uchar*, ulong, uchar*, DigestState*), int xlen)
 {
 	uchar prk[256], tmp[256], cnt;
 	DigestState *ds;
