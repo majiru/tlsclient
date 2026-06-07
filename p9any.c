@@ -40,7 +40,7 @@ unix_dial(char *host, char *port)
 
 	error = getaddrinfo(host, port, &hints, &res0);
 	if(error){
-		printf("could not resolve %s", host);
+		fprint(2, "could not resolve %s\n", host);
 		return -1;
 	}
 	s = -1;
@@ -68,7 +68,7 @@ getkey(Authkey *key, char *user, char *dom, char *proto, char *pass)
 	if(pass != nil && *pass)
 		pass = estrdup(pass);
 	else {
-		printf("getkey: no password");
+		fprint(2, "getkey: no password\n");
 		return 0;
 	}
 	if(pass != nil){
@@ -196,7 +196,7 @@ p9any(char *user, char *pass, int fd)
 	AuthInfo *ai;
 
 	if(readstr(fd, buf, sizeof buf) < 0){
-		printf("cannot read p9any negotiation");
+		fprint(2, "cannot read p9any negotiation\n");
 		return nil;
 	}
 	bbuf = buf;
@@ -211,7 +211,7 @@ p9any(char *user, char *pass, int fd)
 		if((p = strchr(bbuf, ' ')))
 			*p++ = 0;
 		if((dom = strchr(bbuf, '@')) == nil){
-			printf("bad p9any domain");
+			fprint(2, "bad p9any domain\n");
 			return nil;
 		}
 		*dom++ = 0;
@@ -225,29 +225,29 @@ p9any(char *user, char *pass, int fd)
 		bbuf = p;
 	}
 	if(proto == nil){
-		printf("server did not offer p9sk1 or dp9ik");
+		fprint(2, "server did not offer p9sk1 or dp9ik\n");
 		return nil;
 	}
 	proto = estrdup(proto);
 	sprint(buf2, "%s %s", proto, dom);
 	if(write(fd, buf2, strlen(buf2)+1) != strlen(buf2)+1){
-		printf("cannot write user/domain choice in p9any");
+		fprint(2, "cannot write user/domain choice in p9any\n");
 		return nil;
 	}
 	if(v2){
 		if(readstr(fd, buf, sizeof buf) < 0){
-			printf("cannot read OK in p9any");
+			fprint(2, "cannot read OK in p9any\n");
 			return nil;
 		}
 		if(memcmp(buf, "OK\0", 3) != 0){
-			printf("did not get OK in p9any: got %s", buf);
+			fprint(2, "did not get OK in p9any: got %s\n", buf);
 			return nil;
 		}
 	}
 	genrandom(crand, 2*NONCELEN);
 	genrandom(cchal, CHALLEN);
 	if(write(fd, cchal, CHALLEN) != CHALLEN){
-		printf("cannot write p9sk1 challenge");
+		fprint(2, "cannot write p9sk1 challenge\n");
 		return nil;
 	}
 
@@ -256,13 +256,13 @@ p9any(char *user, char *pass, int fd)
 		n += PAKYLEN;
 
 	if(readn(fd, trbuf, n) != n || convM2TR(trbuf, TICKREQLEN, &tr) <= 0){
-		printf("cannot read ticket request in p9sk1");
+		fprint(2, "cannot read ticket request in p9sk1\n");
 		return nil;
 	}
 
 again:
 	if(!getkey(&authkey, user, tr.authdom, proto, pass)){
-		printf("no password");
+		fprint(2, "no password\n");
 		return nil;
 	}
 
@@ -276,15 +276,15 @@ again:
 		n = gettickets(&authkey, &tr, nil, tbuf, sizeof(tbuf));
 	}
 	if(n <= 0){
-		printf("cannot get auth tickets in p9sk1");
+		fprint(2, "cannot get auth tickets in p9sk1\n");
 		return nil;
 	}
 
 	m = convM2T(tbuf, n, &t, &authkey);
 	if(m <= 0 || t.num != AuthTc){
-		printf("?password mismatch with auth server\n");
+		fprint(2, "?password mismatch with auth server\n");
 		if(pass != nil && *pass){
-			printf("wrong password");
+			fprint(2, "wrong password\n");
 			return nil;
 		}
 		goto again;
@@ -293,7 +293,7 @@ again:
 	memmove(tbuf, tbuf+m, n);
 
 	if(dp9ik && write(fd, y, PAKYLEN) != PAKYLEN){
-		printf("cannot send authpak public key back");
+		fprint(2, "cannot send authpak public key back\n");
 		return nil;
 	}
 
@@ -304,13 +304,13 @@ again:
 	n += m;
 
 	if(write(fd, tbuf, n) != n){
-		printf("cannot send ticket and authenticator back");
+		fprint(2, "cannot send ticket and authenticator back\n");
 		return nil;
 	}
 
 	if((n=read(fd, tbuf, m)) != m || memcmp(tbuf, "cpu:", 4) == 0){
 		if(n <= 4){
-			printf("cannot read authenticator");
+			fprint(2, "cannot read authenticator\n");
 			return nil;
 		}
 
@@ -323,14 +323,14 @@ again:
 		if(i > 0)
 			n += i;
 		buf[n] = 0;
-		printf("server says: %s", buf);
+		fprint(2, "server says: %s\n", buf);
 		return nil;
 	}
 	
 	if(convM2A(tbuf, n, &auth, &t) <= 0
 	|| auth.num != AuthAs || tsmemcmp(auth.chal, cchal, CHALLEN) != 0){
-		print("?you and auth server agree about password.\n");
-		print("?server is confused.\n");
+		fprint(2, "?you and auth server agree about password.\n");
+		fprint(2, "?server is confused.\n");
 		return nil;
 	}
 	memmove(crand+NONCELEN, auth.rand, NONCELEN);
