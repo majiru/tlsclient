@@ -16,7 +16,10 @@ test -z "$refspec" && prefix="refs"
 mkdir -p "$dir"
 
 packinitfmt(){
-	printf "%s %s\0host=%s\0" $1 $2 $3 | awk '{ printf("%04x%s", length($0)+4, $0) }'
+	LC_ALL=C
+	cmd=$1 arg=$2 host=$3
+	len=$(( ${#cmd} + ${#arg} + ${#host} + 12 ))
+	printf '%04x%s %s\0host=%s\0' "$len" "$cmd" "$arg" "$host"
 }
 
 while read line
